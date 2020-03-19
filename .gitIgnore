@@ -3,6 +3,5 @@ README.md
 /.idea/
 unpackage/
 pages/test/
-/package.json
 /yarn.lock
 /yarn-error.log
