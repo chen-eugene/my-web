@@ -1,0 +1,19 @@
+1. `typeof`操作符：  
+    - `undefined`——如果这个值未定义;    
+    - `boolean`——如果这个值是布尔值(区分大小写，True和False都不是Boolean值);
+        - true, false
+        - 任何非空字符串，""空字符串
+        - 任何非零数字值，0和NaN
+        - 任何对象，null
+        - n/a，undefined
+    - `string`——如果这个值是字符串;
+    - `number`——如果这个值是数值;
+    - `object`——如果这个值是对象或 null(null 值表 示一个空对象指针，所以返回`object`);
+        - `constructor`：构造函数
+        - `hasOwnProperty`：用于检查给定的属性在当前对象实例中(而不是在实例 的原型中)是否存在。
+        - `isPrototypeOf(object)`：检查是否为传入对象的原型
+        - `propertyIsEnumerable(propertyName)`：检查给定的属性是否能够使用`for-in`语句来枚举
+        - `toLocaleString()`：返回对象的字符串表示，该字符串与执行环境的地区对应
+        - `toString()`：返回对象的字符串表示
+        - `valueOf()`：返回对象的字符串、数值或布尔值表示
+    - `function`——如果这个值是函数。
