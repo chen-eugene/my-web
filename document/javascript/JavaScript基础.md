@@ -65,9 +65,13 @@
     2. 引用类型的赋值：拷贝的是对象的指针，所以指向的是同一个对象
     3. `typeof`用于检测基本类型，`instanceof`用于检测引用类型
     
-##### 3、执行环境及作用域
-- 每个执行环境都有一个与之关联的 _**变量对象**_，环境中定义的所有变量和函数都保存在这个对象中
-- 全局执行环境为window对象，因此所有的全局变量和函数都是作为`window`对象的属性和方法创建的
+##### [3、执行环境及作用域](https://juejin.im/post/5ca062f0e51d4556a05cf45c)
+- 变量对象：每个执行环境都有一个与之关联的 _**变量对象**_，环境中定义的所有变量和函数都保存在这个对象中
+    - 创建 arguments 对象，检查当前环境的参数，初始化属性和属性值。
+    - 检查函数声明，当前环境中每发现一个函数就在 VO 中用函数名创建一个属性，以此来引用函数。如果函数名存在，就覆盖这 个属性。
+    - 检查变量，当前环境中每发现一个变量就在 VO 中用变量名创建一个属性，并初始化其值为 undefined。如果变量名存在， 则不进行任何处理(注意这是在创建阶段，执行阶段会被赋值)，继续检查。
+- 活动对象：进入代码执行阶段，函数环境的变量对象会变成活动对象 AO
+- 全局环境：其变量对象就是`window`对象本身
 - 延长作用域链：
     - `try-catch`：创建一个新的变量对象，并把它添加到作用域链的前端
     - `with`：会将指定指定的对象添加到作用域链中
@@ -96,6 +100,16 @@
    
 - `var` 声明的变量会自动被添加到最接近的环境中，没有使用 var 声明，该变量会自 动被添加到全局环境
 - 如果局部环境中存在着同名标识符，就不会使用位于父环境中的标识符
+
+- _思考：为什么会出现变量提升：_
+    - 全局环境创建阶段：检查函数声明，将函数 hello 放入变量对象(全局环境为 window 对象)。
+    - 检查变量声明，发现变量 hello 已经存在，则跳过。
+    - 执行阶段：执行代码console.log(hello)时，会在全局环境的变量对象中寻找 hello，找到了函数 hello。
+        ```
+        console.log(hello); // [Function: hello]
+        function hello() { console.log('how are u') }
+        var hello = 10;
+        ```
 
 ##### 5、引用类型
 - `Object`
@@ -196,11 +210,193 @@
     
 - 构造函数模式：
     - 解决了对象识别问题
-    - 每个对象的方法都会重新创造
+    - 问题：每个方法都要在每个实例上重新创建一遍，没有复用性可言
   
 - 原型模式:
     - 可以让所有对象实例共享它所包含的属性和方法
     - `for-in`会先访问实例中的属性，然后再去访问原型中的属性。
 
-##### 7、继承
-- 
+##### 7、原型链（很少单独使用）
+- `SubType.prototype = new SuperType();`：没有使用`SubType`的默认原型，将其替换成`SuperType`的实例。
+    这是因为`SuperType`的实例内部的`[[protitype]]`指针指向了`SuperType`
+    原型，最终形成一条原型链。
+    ![github](../images/prototype.jpg)
+- 默认的原型：    
+    - 所有引用类型默认都继承了 `Object`，而 这个继承也是通过原型链实现的。
+    - 所有函数的默认原型都是 `Object` 的实例，因此默认原 型都会包含一个内部指针，指向 `Object.prototype`
+- 通过原型链来实现继承，不能使用对象字面量创建原型方法，这是因为，对象字面量的`prototype`指向的是`Object`，
+    这样会重写整个原型链。
+- 原型链的问题：
+    - 没有访问权限管理：`SuperType`实例对象在被赋值给`SubType.prototype`的时候就变成了原型对象的属性，
+        会被所有`SubType`实例共享。
+    - 创建子类实例的时候，不能再不影响所有对象实例的情况下，给超类的构造函数传递参数
+- 由于原型链存在的问题，在实践中很少单独使用原型链
+
+##### 8、借用构造函数（很少单独使用）   
+- 借用构造函数模式解决了子类向超类传递参数的问题
+- 问题：和构造函数模式创建对象一样，方法都在构造函数中定义，没有复用性可言。并且超类的原型对子类不可见。
+    ```
+    function SuperType(name){ 
+        this.name = name;
+    }
+    function SubType(){
+        //继承了 SuperType，同时还传递了参数 
+        SuperType.call(this, "Nicholas");
+        
+        //实例属性
+        this.age = 29; 
+    }
+    
+    var instance = new SubType(); 
+    alert(instance.name); //"Nicholas"; 
+    alert(instance.age); //29
+    ```
+##### 9、组合继承
+- 存在的问题：会调用两次超类构造函数
+    - 一次是在创建子类型原型的时候
+    - 另一次是在子类型构造函数内部
+    ```
+    function SuperType(name){
+        this.name = name;
+        this.colors = ["red", "blue", "green"];
+    }
+    
+    SuperType.prototype.sayName = function(){ 
+        alert(this.name);
+    };
+    
+    function SubType(name, age){
+        //继承属性 
+        SuperType.call(this, name);
+        this.age = age; 
+    }
+    
+    //继承方法
+    SubType.prototype = new SuperType(); 
+    SubType.prototype.constructor = SubType; 
+    SubType.prototype.sayAge = function(){
+        alert(this.age); 
+    };
+    
+    var instance1 = new SubType("Nicholas", 29);
+    instance1.colors.push("black");
+    alert(instance1.colors);  //"red,blue,green,black" 
+    instance1.sayName();      //"Nicholas";
+    instance1.sayAge();       //29
+    
+    var instance2 = new SubType("Greg", 27);
+    alert(instance2.colors);   //"red,blue,green"
+    instance2.sayName();       //"Greg";
+    instance2.sayAge();        //27
+    ```
+##### 10、原型模式
+```
+function object(o){
+    function F(){}
+    return new F()
+}
+
+var person = {
+    name: "Nicholas",
+    friends: ["Shelby", "Court", "Van"] 
+};
+
+var anotherPerson = object(person); 
+anotherPerson.name = "Greg"; 
+anotherPerson.friends.push("Rob");
+
+var yetAnotherPerson = object(person); 
+yetAnotherPerson.name = "Linda"; 
+yetAnotherPerson.friends.push("Barbie");
+alert(person.friends); //"Shelby,Court,Van,Rob,Barbie"
+```
+
+##### 11、递归
+```
+function factorial(num){ 
+    if (num <= 1){
+        return 1;
+    } else {
+        return num * factorial(num-1); 
+    }
+}
+
+function factorial(num){ 
+    if (num <= 1){
+        return 1;
+    } else {
+        //arguments.callee 是一个指向正在执行的函数的指针，因此可以用它来实现对函数 的递归调用
+        return num * arguments.callee(num-1);
+    } 
+}
+
+var factorial = (function f(num){ 
+    if (num <= 1){
+        return 1;
+    } else {
+        return num * f(num-1);
+    } 
+});
+```
+
+##### 12、闭包
+
+- 闭包：指有权访问另一个函数作用域中的变量的函数
+- 创建闭包：在一个函数内部创建另一个函数
+    ```
+    function createComparisonFunction(propertyName) {
+        return function(object1, object2){
+            var value1 = object1[propertyName];
+            var value2 = object2[propertyName];
+            if (value1 < value2){ 
+                return -1;
+            } else if (value1 > value2){
+                return 1;
+            } else {
+                return 0;
+            } 
+        };
+    }
+    ```
+- 闭包的 `this`：匿名函数的执行环境具有全局性，因此 `this` 对象指向 `window`
+
+##### 13、BOM（浏览器对象模型）
+
+- `window`：既是 `JavaScript` 访问浏览器窗口的一个接口，又是 ECMAScript 规定的 `Global` 对象
+    - `outerWidth` 和 `outerHeight` ：浏览器窗口本身的尺寸
+    - `innerWidth` 和 `innerHeight` 则表示该容器中页面视图区的大小(减去边框宽度)
+    - `window.open()`：打开窗口
+    - 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
