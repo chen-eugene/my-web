@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css" lang="less">
+        .outer {
+            display: inline-block;
+            height: 200px;
+            width: 40%;
+            border: 5px solid #cd0000;
+        }
+
+        .height-100 {
+            /*绝对定位会脱离正常的文档流，将会从除 static 以外的祖先元素开始定位，
+            所有height：100% 的高度将是开始定位的祖先元素的高度*/
+            position: absolute;
+            height: 100%;
+            width: 200px;
+            background-color: #beceeb;
+        }
+
+        .height-inherit {
+            position: absolute;
+            height: inherit;
+            width: 200px;
+            background-color: #beceeb;
+        }
+    </style>
+</head>
+<body>
+<div class="outer">
+    <div class="height-100"></div>
+</div>
+<div class="outer">
+    <div class="height-inherit"></div>
+</div>
+</body>
+</html>

@@ -6,8 +6,8 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     entry: {
-        index: './src/index.js',
-        search: './src/search.js'
+        index: './document/webpack/index.js',
+        search: './document/webpack/search.js'
     },
     output: {
         //============ 文件指纹如何生成 ==========

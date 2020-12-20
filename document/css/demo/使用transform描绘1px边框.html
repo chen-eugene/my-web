@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用transform描绘1px边框</title>
+    <style type="text/css">
+        .onepx-border {
+            margin-top: 10px;
+            width: 200px;
+            height: 80px;
+            cursor: pointer;
+            line-height: 80px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 50px;
+            color: #f66;
+        }
+
+        .onepx-border:first-child {
+            margin-top: 0;
+        }
+
+        .normal {
+            border: 1px solid #f66;
+        }
+
+        .thin {
+            position: relative;
+        }
+
+        .thin::after {
+            position: absolute;
+            left: 0;
+            top: 0;
+            border: 1px solid #f66;
+            width: 200%;
+            height: 200%;
+            content: "";
+            transform: scale(.5);
+            transform-origin: left top;
+        }
+
+    </style>
+</head>
+<body>
+<div class="onepx-border normal">1px</div>
+<div class="onepx-border thin">0.5px</div>
+</body>
+</html>
